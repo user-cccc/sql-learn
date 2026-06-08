@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>SQL 练习</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:#eef0f4;color:#333;min-height:100vh;display:flex;flex-direction:column;}
+
+/* top bar — discreet */
+.topbar{background:#fff;padding:5px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e8e8e8;flex-shrink:0;}
+.topbar .title{font-size:0.8rem;color:#999;font-weight:400;letter-spacing:0.5px;}
+.topbar .right{display:flex;align-items:center;gap:8px;}
+.topbar .progress{font-size:0.7rem;color:#aaa;}
+.topbar .progress strong{color:#4A90D9;font-size:0.8rem;}
+.topbar button{font-size:0.68rem;padding:3px 9px;border:1px solid #ddd;background:#fff;border-radius:10px;cursor:pointer;color:#999;}
+.topbar button:hover{background:#f5f5f5;color:#666;}
+
+/* main */
+.main{flex:1;max-width:680px;margin:0 auto;width:100%;padding:12px 14px 40px;}
+
+/* intro screen */
+.intro{text-align:center;padding:30px 20px;}
+.intro h2{font-size:1.3rem;margin:16px 0 8px;}
+.intro p{color:#666;line-height:1.8;font-size:0.9rem;max-width:400px;margin:0 auto;}
+.intro .start-btn{margin-top:20px;padding:12px 36px;background:#4A90D9;color:#fff;border:none;border-radius:8px;font-size:1rem;cursor:pointer;font-weight:600;}
+.intro .start-btn:hover{background:#3a7bc8;}
+.intro .analogy-box{background:#fff;border-radius:10px;padding:16px 20px;margin:16px auto;max-width:420px;text-align:left;box-shadow:0 1px 3px rgba(0,0,0,0.05);}
+.intro .analogy-box .row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:0.85rem;}
+.intro .analogy-box .row:last-child{border-bottom:none;}
+.intro .analogy-box .emoji{font-size:1.2rem;width:28px;text-align:center;}
+.intro .analogy-box .arrow{color:#4A90D9;font-weight:bold;margin:0 4px;}
+
+/* cards */
+.card{background:#fff;border-radius:10px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.04);overflow:hidden;}
+.card-header{display:flex;align-items:center;gap:8px;padding:12px 16px;font-weight:700;font-size:0.9rem;}
+.card-body{padding:14px 16px;font-size:0.88rem;line-height:1.75;color:#444;}
+.card-body p{margin-bottom:6px;}
+.card-body strong{color:#333;background:#fff3cd;padding:1px 4px;border-radius:3px;font-weight:600;}
+.card-body code{background:#eee;padding:1px 5px;border-radius:3px;font-family:"SF Mono",Consolas,monospace;font-size:0.82rem;}
+
+/* knowledge card */
+.knowledge .card-header{background:#eef4ff;color:#4A90D9;}
+.knowledge .card-body{background:#fafcff;}
+
+/* example card */
+.example .card-header{background:#e8f8ed;color:#27ae60;}
+.example .card-body{background:#fafef9;}
+
+/* practice card */
+.practice .card-header{background:#fff8ed;color:#e67e22;}
+.practice .card-body{background:#fffdf9;}
+
+/* table visual */
+.mini-table{border-collapse:collapse;font-size:0.78rem;margin:8px 0;width:auto;}
+.mini-table th{background:#4A90D9;color:#fff;padding:5px 10px;text-align:left;font-weight:500;font-size:0.72rem;}
+.mini-table td{padding:4px 10px;border-bottom:1px solid #eee;background:#fff;}
+.mini-table tr:last-child td{border-bottom:none;}
+.mini-table-wrap{overflow-x:auto;margin:6px 0;}
+
+/* highlight box */
+.highlight-box{background:#fffde8;border:1px solid #ffe082;border-radius:6px;padding:10px 14px;margin:8px 0;font-size:0.85rem;line-height:1.7;}
+.highlight-box .big{font-size:1.1rem;font-weight:700;color:#e67e22;}
+
+/* translation */
+.translate{font-size:0.82rem;color:#888;margin:6px 0;padding:6px 10px;background:#f9f9f9;border-radius:4px;font-style:italic;}
+.translate::before{content:'🔤 翻译成人话：';font-style:normal;color:#666;}
+
+/* editor */
+.editor-wrap{margin:10px 0;position:relative;}
+.editor-wrap textarea{width:100%;height:80px;font-family:"SF Mono","Cascadia Code",Consolas,monospace;font-size:0.85rem;padding:10px 12px;border:2px solid #e0e0e0;border-radius:8px;resize:none;outline:none;background:#fafafa;line-height:1.6;transition:0.2s;}
+.editor-wrap textarea:focus{border-color:#4A90D9;background:#fff;}
+.editor-wrap textarea.wrong{border-color:#e74c3c;background:#fff5f5;}
+.editor-wrap textarea.correct{border-color:#27ae60;background:#f5fff5;}
+.editor-wrap .label{font-size:0.7rem;color:#aaa;margin-bottom:4px;}
+
+/* buttons */
+.btn-row{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0;}
+.btn{padding:8px 16px;border:none;border-radius:6px;font-size:0.83rem;cursor:pointer;font-weight:600;transition:0.15s;white-space:nowrap;}
+.btn-sm{padding:5px 12px;font-size:0.75rem;}
+.btn-run{background:#27ae60;color:#fff;}
+.btn-run:hover{background:#219a52;}
+.btn-check{background:#4A90D9;color:#fff;}
+.btn-check:hover{background:#3a7bc8;}
+.btn-hint{background:#fff;color:#f0ad4e;border:1px solid #f0ad4e;}
+.btn-hint:hover{background:#fff9f0;}
+.btn-skip{background:#fff;color:#bbb;border:1px solid #ddd;}
+.btn-skip:hover{background:#f5f5f5;}
+.btn-next{background:#27ae60;color:#fff;}
+.btn-next:hover{background:#219a52;}
+.btn-prev{background:#fff;color:#666;border:1px solid #ddd;}
+.btn-retry{background:#fff;color:#4A90D9;border:1px solid #4A90D9;}
+
+/* feedback */
+.fb{display:none;padding:10px 14px;border-radius:6px;font-size:0.83rem;line-height:1.6;margin:8px 0;}
+.fb.show{display:block;}
+.fb.ok{background:#d4edda;color:#155724;border:1px solid #c3e6cb;}
+.fb.bad{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;}
+.fb.hint{background:#fff3cd;color:#856404;border:1px solid #ffeaa7;}
+.fb.info{background:#d1ecf1;color:#0c5460;border:1px solid #bee5eb;}
+
+/* result table */
+.result-area{margin-top:8px;display:none;overflow-x:auto;}
+.result-area.show{display:block;}
+.result-area .count{font-size:0.73rem;color:#888;margin-bottom:4px;}
+.res-table{width:100%;border-collapse:collapse;font-size:0.78rem;border-radius:6px;overflow:hidden;}
+.res-table th{background:#667eea;color:#fff;padding:7px 10px;text-align:left;font-weight:500;}
+.res-table td{padding:6px 10px;border-bottom:1px solid #eee;background:#fff;}
+.res-table tr:hover td{background:#f8f9ff;}
+
+/* nav */
+.nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:6px;}
+.dots{display:flex;gap:3px;flex-wrap:wrap;justify-content:center;}
+.dot{width:7px;height:7px;border-radius:50%;background:#ddd;cursor:pointer;transition:0.2s;}
+.dot.done{background:#27ae60;}
+.dot.current{background:#4A90D9;width:9px;height:9px;}
+
+/* sandbox */
+.sandbox .card-header{background:#f5f0ff;color:#7c3aed;}
+.sandbox .card-body{background:#fdfaff;}
+
+/* bottom toggle */
+.bottom-row{text-align:center;margin-top:16px;padding-bottom:20px;}
+.bottom-row button{font-size:0.73rem;color:#aaa;background:none;border:none;cursor:pointer;text-decoration:underline;}
+.bottom-row button:hover{color:#666;}
+
+/* complete */
+.complete{text-align:center;padding:30px 20px;}
+
+/* loader */
+.loader{text-align:center;padding:50px 20px;color:#aaa;}
+.loader .spinner{display:inline-block;width:28px;height:28px;border:3px solid #eee;border-top-color:#4A90D9;border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* mobile */
+@media(max-width:600px){
+  .main{padding:8px 10px 30px;}
+  .card-body{padding:10px 12px;font-size:0.82rem;}
+  .card-header{padding:10px 14px;font-size:0.83rem;}
+  .btn{padding:7px 13px;font-size:0.78rem;}
+  .editor-wrap textarea{height:65px;font-size:0.8rem;}
+  .intro h2{font-size:1.1rem;}
+  .mini-table{font-size:0.7rem;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="title">📊 SQL 练习</span>
+  <span class="right">
+    <span class="progress" id="prog"></span>
+    <button onclick="toggleSandbox()" title="自由模式">🔬</button>
+    <button onclick="resetAll()" title="重置">↺</button>
+  </span>
+</div>
+
+<div class="main" id="main"><div class="loader"><div class="spinner"></div><p style="margin-top:10px;font-size:0.83rem;">加载中...</p><p id="load-status" style="font-size:0.7rem;color:#ccc;margin-top:4px;"></p></div></div>
+
+<script>
+// ==================== CDN LOADING ====================
+const CDNS = [
+  ['https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/', 'sql-wasm.js'],
+  ['https://unpkg.com/sql.js@1.10.3/dist/', 'sql-wasm.js'],
+  ['https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/', 'sql-wasm.js'],
+  ['https://sql.js.org/dist/', 'sql-wasm.js']
+];
+let SQL=null, db=null;
+
+async function loadScript(url){
+  return new Promise((ok,fail)=>{
+    const s=document.createElement('script');s.src=url;
+    s.onload=ok;s.onerror=()=>fail(new Error('fail'));
+    document.head.appendChild(s);
+  });
+}
+
+async function boot(){
+  const st=document.getElementById('load-status');
+  for(let i=0;i<CDNS.length;i++){
+    const [base,file]=CDNS[i];
+    try{
+      st.textContent='加载中 ('+(i+1)+'/'+CDNS.length+')...';
+      await loadScript(base+file);
+      SQL=await initSqlJs({locateFile:f=>base+f});
+      initDB();loadProgress();render();
+      return;
+    }catch(e){
+      const old=document.querySelector('script[src="'+base+file+'"]');
+      if(old)old.remove();
+    }
+  }
+  document.getElementById('main').innerHTML='<div class="loader"><p style="color:#e74c3c;">❌ 加载失败</p><p style="font-size:0.78rem;color:#888;">请检查网络后刷新重试</p></div>';
+}
+
+// ==================== DATABASE ====================
+const INIT_SQL=[
+  "CREATE TABLE students(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, age INTEGER, city TEXT, gender TEXT)",
+  "INSERT INTO students(name,age,city,gender) VALUES ('张三',20,'北京','男'),('李四',22,'上海','男'),('王五',19,'广州','男'),('赵六',21,'深圳','女'),('孙七',23,'北京','女'),('周八',18,'上海','女'),('吴九',20,'杭州','男'),('郑十',24,'成都','女'),('王小明',19,'北京','男'),('李小丽',21,'广州','女'),('张大伟',22,'深圳','男'),('陈小芳',20,'上海','女'),('刘洋',23,'杭州','男'),('黄丽',18,'成都','女'),('林峰',21,'北京','男')",
+  "CREATE TABLE courses(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, teacher TEXT, credits INTEGER)",
+  "INSERT INTO courses(name,teacher,credits) VALUES ('数据库原理','王教授',4),('高等数学','李教授',5),('英语读写','张老师',3),('程序设计','刘教授',4),('数据结构','陈教授',4),('操作系统','赵教授',3)",
+  "CREATE TABLE scores(id INTEGER PRIMARY KEY AUTOINCREMENT, student_id INTEGER, course_id INTEGER, score REAL)",
+  "INSERT INTO scores(student_id,course_id,score) VALUES (1,1,85),(1,2,92),(1,3,78),(2,1,76),(2,2,88),(2,4,95),(3,1,90),(3,3,82),(3,5,70),(4,2,65),(4,4,88),(4,6,91),(5,1,72),(5,3,89),(5,5,94),(6,2,98),(6,4,76),(6,6,83),(7,1,55),(7,3,61),(7,5,77),(8,2,82),(8,4,69),(8,6,90),(9,1,93),(9,2,87),(9,3,74),(10,3,96),(10,5,85),(10,6,79),(11,1,68),(11,2,73),(11,4,88),(12,2,91),(12,3,84),(12,5,77),(13,1,82),(13,4,70),(13,6,85),(14,2,79),(14,3,88),(14,5,92),(15,1,86),(15,4,94),(15,6,73)"
+];
+function initDB(){db=new SQL.Database();for(const s of INIT_SQL)db.run(s);}
+
+const TABLE_INFO={
+  students:['id INTEGER 主键','name TEXT 姓名','age INTEGER 年龄','city TEXT 城市','gender TEXT 性别'],
+  courses:['id INTEGER 主键','name TEXT 课程名','teacher TEXT 教师','credits INTEGER 学分'],
+  scores:['id INTEGER 主键','student_id INTEGER 学生ID','course_id INTEGER 课程ID','score REAL 成绩']
+};
+
+// ==================== LESSONS ====================
+const LESSONS=[
+  // 1: SELECT *
+  {id:1,title:'SELECT — 查看数据',
+   teach:'<p>数据库就像一张 <strong>Excel 表格</strong>。每个数据库里有若干张<strong>表</strong>（table），每张表由<strong>行</strong>（row）和<strong>列</strong>（column）组成。</p><p>我们已经有了一张叫 <strong>students</strong> 的表，里面有 15 个学生的数据，包括姓名、年龄、城市、性别。</p><p><strong>SELECT</strong> 的意思是"查出来给我看"。<strong>*</strong> 是"全部列"的简写。<strong>FROM</strong> 后面写表名，表示"从哪张表查"。</p>',
+   example:'SELECT * FROM students;',
+   exampleNote:'下面这条 SQL 的意思是：<div class="translate">从 students 表里，把所有列的数据都显示出来。</div>点击"运行看看"按钮查看结果。',
+   task:'现在你自己写一遍：查看 students 表的所有数据。',
+   check:'SELECT * FROM students',
+   hint:'SELECT * FROM students;',
+   starter:''
+  },
+  // 2: SELECT columns
+  {id:2,title:'选择特定列',
+   teach:'<p>用 <strong>*</strong> 会显示所有列。但有时候你只关心其中几列——比如你只想知道学生的<strong>姓名和年龄</strong>，不需要看城市和性别。</p><p>那就把 <strong>*</strong> 换成具体的<strong>列名</strong>（column name），多个列名用<strong>逗号</strong>隔开。</p>',
+   example:'SELECT name, age FROM students;',
+   exampleNote:'<div class="translate">从 students 表，只显示 name 和 age 这两列。</div>',
+   task:'只查看学生的姓名（name）和年龄（age）这两列。',
+   check:'SELECT name, age FROM students',
+   hint:'SELECT name, age FROM students;',
+   starter:''
+  },
+  // 3: WHERE number
+  {id:3,title:'WHERE — 按条件筛选（数字）',
+   teach:'<p>表中可能有很多行数据。如果你只想看<strong>满足特定条件</strong>的行，就用 <strong>WHERE</strong>。</p><p>比如"只看年龄大于 20 的学生"→ <strong>WHERE age > 20</strong>。</p><p>常用的比较符号：<strong>></strong>（大于）、<strong><</strong>（小于）、<strong>>=</strong>（大于等于）、<strong><=</strong>（小于等于）、<strong>=</strong>（等于）、<strong><></strong>（不等于）。</p>',
+   example:'SELECT * FROM students WHERE age > 20;',
+   exampleNote:'<div class="translate">从 students 表，只看那些"年龄大于20"的行。</div>',
+   task:'找出年龄大于 20 岁的所有学生。',
+   check:'SELECT * FROM students WHERE age > 20',
+   hint:'SELECT * FROM students WHERE age > 20;',
+   starter:''
+  },
+  // 4: WHERE string
+  {id:4,title:'WHERE — 按条件筛选（文字）',
+   teach:'<p>如果列是文字类型（比如城市、姓名），筛选时需要用<strong>单引号</strong>把值括起来。</p><p>比如：<strong>city = \'北京\'</strong> 表示"城市这一列的值等于北京"。</p><p><span style="color:#e74c3c;">注意：SQL 中字符串用单引号，不是双引号！</span></p>',
+   example:"SELECT * FROM students WHERE city = '北京';",
+   exampleNote:'<div class="translate">从 students 表，只看城市是"北京"的学生。</div>',
+   task:'找出所有来自北京（city = \'北京\'）的学生。',
+   check:"SELECT * FROM students WHERE city = '北京'",
+   hint:"SELECT * FROM students WHERE city = '北京';",
+   starter:''
+  },
+  // 5: ORDER BY
+  {id:5,title:'ORDER BY — 排序',
+   teach:'<p>查询结果默认是无序的。用 <strong>ORDER BY</strong> 指定按哪一列排序。</p><p><strong>ASC</strong> = 升序（从小到大），不写默认就是 ASC。<br><strong>DESC</strong> = 降序（从大到小）。</p><p>比如你想知道"哪个学生年龄最大"，就按年龄降序排列。</p>',
+   example:'SELECT * FROM students ORDER BY age DESC;',
+   exampleNote:'<div class="translate">从 students 表查所有数据，按年龄从大到小排序。</div>',
+   task:'按年龄从大到小（降序）排列所有学生。',
+   check:'SELECT * FROM students ORDER BY age DESC',
+   hint:'SELECT * FROM students ORDER BY age DESC;',
+   starter:''
+  },
+  // 6: LIMIT
+  {id:6,title:'LIMIT — 只看前几条',
+   teach:'<p>有时候数据太多了，你只想看<strong>前几条</strong>。用 <strong>LIMIT N</strong> 限制最多返回 N 行。</p><p>LIMIT 经常和 ORDER BY 搭配。比如"年龄最大的 3 个人是谁"：先按年龄降序排序，再取前 3 条。</p>',
+   example:'SELECT * FROM students ORDER BY age DESC LIMIT 3;',
+   exampleNote:'<div class="translate">先按年龄降序，然后只要前 3 行 → 这就是年龄最大的 3 个人。</div>',
+   task:'找出年龄最大的 3 个学生。',
+   check:'SELECT * FROM students ORDER BY age DESC LIMIT 3',
+   hint:'SELECT * FROM students ORDER BY age DESC LIMIT 3;',
+   starter:''
+  },
+  // 7: AND
+  {id:7,title:'AND — 多个条件同时满足',
+   teach:'<p>用 <strong>AND</strong> 连接两个条件，意思是"<strong>而且</strong>"——两个条件都必须满足。</p><p>比如"北京<strong>而且</strong>年龄大于20的学生"：两个条件缺一不可。</p>',
+   example:"SELECT * FROM students WHERE city = '北京' AND age > 20;",
+   exampleNote:'<div class="translate">城市是北京<strong>而且</strong>年龄大于20的学生。</div>',
+   task:'找出"北京"且年龄大于 20 的学生。',
+   check:"SELECT * FROM students WHERE city = '北京' AND age > 20",
+   hint:"SELECT * FROM students WHERE city = '北京' AND age > 20;",
+   starter:''
+  },
+  // 8: OR
+  {id:8,title:'OR — 满足任一条件即可',
+   teach:'<p>用 <strong>OR</strong> 连接两个条件，意思是"<strong>或者</strong>"——满足其中一个就算。</p><p>比如"北京<strong>或者</strong>上海的学生"：只要城市是北京或上海中的任意一个。</p>',
+   example:"SELECT * FROM students WHERE city = '北京' OR city = '上海';",
+   exampleNote:'<div class="translate">城市是北京<strong>或者</strong>城市是上海的学生。</div>',
+   task:'找出北京或上海的学生。',
+   check:"SELECT * FROM students WHERE city = '北京' OR city = '上海'",
+   hint:"SELECT * FROM students WHERE city = '北京' OR city = '上海';",
+   starter:''
+  },
+  // 9: LIKE
+  {id:9,title:'LIKE — 模糊搜索',
+   teach:'<p>有时候你记不清精确的值，只想搜个大概。用 <strong>LIKE</strong> 做模糊匹配。</p><p><strong>%</strong> 代表"任意字符（包括0个）"。<br>比如 <strong>\'张%\'</strong> = 以"张"开头的所有字符串。<br><strong>\'%小%\'</strong> = 包含"小"的字符串。</p><p>LIKE 和 WHERE 一起用。</p>',
+   example:"SELECT * FROM students WHERE name LIKE '张%';",
+   exampleNote:'<div class="translate">姓名以"张"开头的学生（后面可以跟任意字符）。</div>',
+   task:'找出所有姓"张"的学生。',
+   check:"SELECT * FROM students WHERE name LIKE '张%'",
+   hint:"SELECT * FROM students WHERE name LIKE '张%';",
+   starter:''
+  },
+  // 10: IN
+  {id:10,title:'IN — 简化多个 OR',
+   teach:'<p>如果你要匹配好几个值，写很多 OR 会很啰嗦。用 <strong>IN</strong> 可以简化。</p><p><strong>city IN (\'北京\',\'上海\',\'深圳\')</strong> 等价于 city=\'北京\' OR city=\'上海\' OR city=\'深圳\'。</p>',
+   example:"SELECT * FROM students WHERE city IN ('北京','上海','深圳');",
+   exampleNote:'<div class="translate">城市是北京、上海、深圳中的任意一个。</div>',
+   task:'找出北京、上海、深圳三个城市的学生。',
+   check:"SELECT * FROM students WHERE city IN ('北京','上海','深圳')",
+   hint:"SELECT * FROM students WHERE city IN ('北京','上海','深圳');",
+   starter:''
+  },
+  // 11: COUNT
+  {id:11,title:'COUNT — 数数有多少行',
+   teach:'<p><strong>COUNT(*)</strong> 用来统计"有多少行"。它不显示具体数据，而是返回一个数字。</p><p><strong>AS</strong> 可以给结果列起一个别名（alias），让显示出来的列名更好看。</p><p>比如 COUNT(*) 返回的列默认叫 "COUNT(*)"，用 AS 可以改成"总人数"。</p>',
+   example:'SELECT COUNT(*) AS 总人数 FROM students;',
+   exampleNote:'<div class="translate">数一下 students 表里一共有多少行 → 返回一个数字。</div>',
+   task:'统计学生一共有多少人。',
+   check:'SELECT COUNT(*) FROM students',
+   hint:'SELECT COUNT(*) FROM students;',
+   starter:''
+  },
+  // 12: AVG MAX MIN
+  {id:12,title:'AVG / MAX / MIN — 平均值和极值',
+   teach:'<p><strong>AVG(列名)</strong> — 计算这一列的平均值<br><strong>MAX(列名)</strong> — 找出这一列的最大值<br><strong>MIN(列名)</strong> — 找出这一列的最小值<br><strong>SUM(列名)</strong> — 计算这一列的总和</p><p>它们和 COUNT 一样，都是<strong>聚合函数</strong>——把多行数据汇总成一个值。</p>',
+   example:'SELECT AVG(age) AS 平均年龄, MAX(age) AS 最大, MIN(age) AS 最小 FROM students;',
+   exampleNote:'<div class="translate">计算所有学生年龄的平均值、最大值、最小值。</div>',
+   task:'查出学生的平均年龄、最大年龄和最小年龄。',
+   check:'SELECT AVG(age), MAX(age), MIN(age) FROM students',
+   hint:'SELECT AVG(age), MAX(age), MIN(age) FROM students;',
+   starter:''
+  },
+  // 13: GROUP BY
+  {id:13,title:'GROUP BY — 分组统计',
+   teach:'<p>这是 SQL 中<strong>最重要的概念之一</strong>。</p><p><strong>GROUP BY</strong> 把数据按照某一列的值分成若干组，然后对<strong>每组</strong>分别做统计。</p><p>比如"每个城市有多少学生"：<br>第一步：按城市分组（北京的一组、上海的一组……）<br>第二步：对每组分别 COUNT</p>',
+   example:'SELECT city, COUNT(*) AS 人数 FROM students GROUP BY city;',
+   exampleNote:'<div class="translate">按城市分组，统计每个城市的学生人数。</div>',
+   task:'统计每个城市分别有多少学生。',
+   check:'SELECT city, COUNT(*) FROM students GROUP BY city',
+   hint:'SELECT city, COUNT(*) FROM students GROUP BY city;',
+   starter:''
+  },
+  // 14: HAVING
+  {id:14,title:'HAVING — 分组后的过滤',
+   teach:'<p><strong>WHERE</strong> 是在<strong>分组前</strong>过滤行。<br><strong>HAVING</strong> 是在<strong>分组后</strong>过滤组。</p><p>区别：<br>WHERE 过滤的是原始数据行（比如 age>20 的人）<br>HAVING 过滤的是统计结果（比如 COUNT(*) >= 3 的组）</p><p>HAVING 紧跟在 GROUP BY 后面。</p>',
+   example:'SELECT city, COUNT(*) AS n FROM students GROUP BY city HAVING n >= 3;',
+   exampleNote:'<div class="translate">按城市分组，统计人数，但只保留人数≥3的城市。</div>',
+   task:'找出学生人数 ≥ 3 的城市。',
+   check:'SELECT city, COUNT(*) AS n FROM students GROUP BY city HAVING n >= 3',
+   hint:'SELECT city, COUNT(*) AS n FROM students GROUP BY city HAVING n >= 3;',
+   starter:''
+  },
+  // 15: DISTINCT
+  {id:15,title:'DISTINCT — 去重',
+   teach:'<p><strong>DISTINCT</strong> 的作用是"去掉重复值，每个值只留一个"。</p><p>比如你想知道"学生来自哪些城市"，不需要重复看到 5 次"北京"。SELECT DISTINCT city 就会列出：北京、上海、广州……每个城市只出现一次。</p>',
+   example:'SELECT DISTINCT city FROM students;',
+   exampleNote:'<div class="translate">列出所有不重复的城市名。</div>',
+   task:'列出所有不重复的城市名（每种城市只出现一次）。',
+   check:'SELECT DISTINCT city FROM students',
+   hint:'SELECT DISTINCT city FROM students;',
+   starter:''
+  },
+  // 16: JOIN intro
+  {id:16,title:'JOIN — 关联两张表（上）',
+   teach:'<p>数据通常分散在多张表中。比如学生信息在 <strong>students</strong> 表，成绩在 <strong>scores</strong> 表。要想知道"每个学生的各科成绩"，就需要把两张表<strong>连起来查</strong>。</p><p><strong>JOIN ... ON ...</strong> 就是用来连接表的。</p><p>scores 表里有 <strong>student_id</strong> 列，它对应 students 表的 id——这就是两张表之间的"桥梁"。</p>',
+   example:'SELECT name, score FROM scores JOIN students ON scores.student_id = students.id LIMIT 8;',
+   exampleNote:'<div class="translate">把 scores 表和 students 表按 student_id=id 连起来，显示学生姓名和成绩。</div>',
+   task:'查出每个学生的姓名和对应的成绩（前8行即可）。提示：scores JOIN students ON scores.student_id = students.id',
+   check:'SELECT name, score FROM scores JOIN students ON scores.student_id = students.id',
+   hint:'SELECT name, score FROM scores JOIN students ON scores.student_id = students.id LIMIT 8;',
+   starter:''
+  },
+  // 17: JOIN three tables
+  {id:17,title:'JOIN — 连接三张表（下）',
+   teach:'<p>可以连续 JOIN 多张表。每次 JOIN 后面跟一个 ON 条件。</p><p>scores 表连接了 students（通过 student_id）和 courses（通过 course_id）。三表连接就能看到"哪个学生 + 哪门课 + 考了多少分"。</p><p>给表起<strong>别名</strong>能让 SQL 更短：<br>scores sc 表示把 scores 简称为 sc。</p>',
+   example:'SELECT s.name AS 学生, c.name AS 课程, sc.score AS 成绩 FROM scores sc JOIN students s ON sc.student_id = s.id JOIN courses c ON sc.course_id = c.id LIMIT 10;',
+   exampleNote:'<div class="translate">三表连接：scores → students（拿姓名）→ courses（拿课程名），显示前10行。</div>',
+   task:'查出学生姓名、课程名、成绩（三表连接）。提示：需要 JOIN 两次。',
+   check:'SELECT s.name, c.name, sc.score FROM scores sc JOIN students s ON sc.student_id = s.id JOIN courses c ON sc.course_id = c.id',
+   hint:'SELECT s.name, c.name, sc.score FROM scores sc JOIN students s ON sc.student_id = s.id JOIN courses c ON sc.course_id = c.id LIMIT 10;',
+   starter:''
+  },
+  // 18: INSERT
+  {id:18,title:'INSERT — 插入新数据',
+   teach:'<p>之前学的都是<strong>查询</strong>（读数据）。现在学<strong>写入</strong>（改数据）。</p><p><strong>INSERT INTO</strong> 表名 (列1,列2,...) <strong>VALUES</strong> (值1,值2,...)</p><p>列名和值的顺序要一一对应。id 列是自动生成的，不用手动填。</p><p>插入后可以用 SELECT 确认插入成功。</p>',
+   example:"INSERT INTO students (name, age, city, gender) VALUES ('新同学', 21, '深圳', '男');\nSELECT * FROM students WHERE name = '新同学';",
+   exampleNote:'<div class="translate">先插入一条新学生，再查出来确认。（这是两条 SQL，分别执行）</div>',
+   task:'插入一条新学生记录——名字随意、年龄随意、城市随意、性别随意。然后用 SELECT 查出来验证。',
+   check:'CONTAINS:INSERT INTO students',
+   hint:"INSERT INTO students (name, age, city, gender) VALUES ('测试', 20, '北京', '男');\nSELECT * FROM students WHERE name = '测试';",
+   starter:''
+  },
+  // 19: UPDATE
+  {id:19,title:'UPDATE — 修改数据',
+   teach:'<p><strong>UPDATE</strong> 表名 <strong>SET</strong> 列名=新值 <strong>WHERE</strong> 条件</p><p><span style="color:#e74c3c;">⚠ 超级重要：如果不写 WHERE，会修改整张表的所有行！</span>一定要加上 WHERE 指定要改哪些行。</p>',
+   example:"UPDATE students SET age = 22 WHERE name = '新同学';\nSELECT * FROM students WHERE name = '新同学';",
+   exampleNote:'<div class="translate">把"新同学"的年龄改成22，然后查出来验证。</div>',
+   task:'把你上一步插入的那个学生的年龄加 1。然后用 SELECT 确认修改成功。',
+   check:'CONTAINS:UPDATE students',
+   hint:"UPDATE students SET age = age + 1 WHERE name = '你插入的名字';\nSELECT * FROM students;",
+   starter:''
+  },
+  // 20: DELETE
+  {id:20,title:'DELETE — 删除数据',
+   teach:'<p><strong>DELETE FROM</strong> 表名 <strong>WHERE</strong> 条件</p><p><span style="color:#e74c3c;">⚠ 同样：不写 WHERE 会删除所有行！</span>一定要先 SELECT 确认要删的行是对的，再 DELETE。</p>',
+   example:"DELETE FROM students WHERE name = '新同学';\nSELECT * FROM students;",
+   exampleNote:'<div class="translate">删除名字叫"新同学"的学生，然后查看全部数据确认已删除。</div>',
+   task:'删除你之前插入的那条学生记录。然后 SELECT 确认它已消失。',
+   check:'CONTAINS:DELETE FROM students',
+   hint:"DELETE FROM students WHERE name = '你插入的名字';\nSELECT * FROM students;",
+   starter:''
+  }
+];
+
+// ==================== APP STATE ====================
+let cur=0, done={}, sandbox=false;
+
+function loadProgress(){
+  try{
+    const d=JSON.parse(localStorage.getItem('sql101')||'{}');
+    done=d.done||{}; cur=d.cur||0;
+  }catch(e){}
+}
+function saveProgress(){
+  try{localStorage.setItem('sql101',JSON.stringify({done,cur}));}catch(e){}
+}
+
+// ==================== RENDER ====================
+function render(){
+  if(sandbox){renderSandbox();return;}
+  if(cur>=LESSONS.length){renderComplete();return;}
+  const L=LESSONS[cur];
+  document.getElementById('prog').innerHTML='进度 <strong>'+(cur+1)+'</strong>/'+LESSONS.length;
+
+  let html='';
+  // Knowledge card
+  html+='<div class="card knowledge"><div class="card-header">📖 知识点：'+L.title+'</div><div class="card-body">'+L.teach+'</div></div>';
+
+  // Example card
+  html+='<div class="card example"><div class="card-header">👁️ 先看示例</div><div class="card-body">';
+  html+='<p style="font-size:0.82rem;color:#666;margin-bottom:6px;">'+L.exampleNote+'</p>';
+  html+='<div class="editor-wrap"><div class="label">示例 SQL（点运行看看结果）</div>';
+  html+='<textarea id="ex-sql" readonly style="height:50px;background:#f5faf5;">'+escHtml(L.example)+'</textarea></div>';
+  html+='<button class="btn btn-sm btn-run" onclick="runExample()">▶ 运行看看</button>';
+  html+='<div class="result-area" id="ex-result"></div>';
+  html+='</div></div>';
+
+  // Practice card
+  const isDone=done[L.id];
+  html+='<div class="card practice"><div class="card-header">✏️ 自己动手'+(isDone?' <span style="color:#27ae60;font-size:0.75rem;">✅ 已完成</span>':'')+'</div>';
+  html+='<div class="card-body">';
+  html+='<p style="font-weight:600;color:#e67e22;">🎯 '+L.task+'</p>';
+  html+='<div class="editor-wrap"><textarea id="pq-input" placeholder="在这里输入你的 SQL 语句..." spellcheck="false">'+escHtml(L.starter||'')+'</textarea></div>';
+  html+='<div class="btn-row">';
+  html+='<button class="btn btn-check" id="btn-check" onclick="doCheck()">✓ 检查答案</button>';
+  html+='<button class="btn btn-hint btn-sm" onclick="doHint()">💡 看提示</button>';
+  html+='<button class="btn btn-skip btn-sm" onclick="doSkip()">跳过</button>';
+  html+='</div>';
+  html+='<div class="fb" id="pq-fb"></div><div class="result-area" id="pq-result"></div>';
+  html+='</div></div>';
+
+  // Nav
+  html+='<div class="nav-row">';
+  html+='<button class="btn btn-prev btn-sm" onclick="doPrev()" '+(cur===0?'style="visibility:hidden"':'')+'>← 上一课</button>';
+  html+='<div class="dots">';
+  for(let i=0;i<LESSONS.length;i++){
+    let cls='dot';if(done[LESSONS[i].id])cls+=' done';if(i===cur)cls+=' current';
+    html+='<span class="'+cls+'" onclick="goTo('+i+')" title="第'+LESSONS[i].id+'课"></span>';
+  }
+  html+='</div>';
+  html+='<button class="btn btn-next btn-sm" id="btn-next" onclick="doNext()" '+(isDone?'':'style="visibility:hidden"')+'>下一课 →</button>';
+  html+='</div>';
+
+  // Bottom
+  html+='<div class="bottom-row"><button onclick="toggleSandbox()">🔬 自由模式（不受限制随便写 SQL）</button></div>';
+
+  document.getElementById('main').innerHTML=html;
+  const ta=document.getElementById('pq-input');if(ta){ta.focus();ta.addEventListener('keydown',e=>{if(e.ctrlKey&&e.key==='Enter'){e.preventDefault();doCheck();}});}
+}
+
+function renderComplete(){
+  document.getElementById('prog').textContent='已完成';
+  document.getElementById('main').innerHTML=
+    '<div class="complete"><p style="font-size:3rem;">🎉</p><h2 style="margin:12px 0;">全部通关！</h2><p style="color:#666;line-height:1.8;">你已经掌握了 SQL 的核心基础：<br>SELECT、WHERE、ORDER BY、聚合函数、GROUP BY、JOIN、INSERT/UPDATE/DELETE</p><div style="margin-top:18px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;"><button class="btn btn-check" onclick="toggleSandbox()">🔬 自由模式练习</button><button class="btn btn-hint" onclick="resetAll()">🔄 从头再来</button></div></div>';
+}
+
+function renderSandbox(){
+  document.getElementById('prog').textContent='自由模式';
+  document.getElementById('main').innerHTML=
+    '<div class="card sandbox"><div class="card-header">🔬 自由模式</div><div class="card-body"><p style="color:#888;font-size:0.82rem;">随便写 SQL，数据库有 <strong>students</strong>（学生）、<strong>courses</strong>（课程）、<strong>scores</strong>（成绩）三张表。点击下方按钮查看表结构。</p><div class="editor-wrap"><textarea id="sb-input" style="height:100px;" placeholder="输入任意 SQL 语句...">SELECT * FROM students LIMIT 5;</textarea></div><div class="btn-row"><button class="btn btn-check" onclick="runSandbox()">▶ 运行</button><button class="btn btn-hint btn-sm" onclick="showTableInfo()">📋 表结构</button><button class="btn btn-skip btn-sm" onclick="initDB();showSbMsg(\'info\',\'数据库已重置。\')">🔄 重置数据库</button></div><div class="fb" id="sb-fb"></div><div class="result-area" id="sb-result"></div></div></div><div class="bottom-row"><button onclick="toggleSandbox()">📖 回到课程</button></div>';
+  const ta=document.getElementById('sb-input');if(ta){ta.focus();ta.addEventListener('keydown',e=>{if(e.ctrlKey&&e.key==='Enter'){e.preventDefault();runSandbox();}});}
+}
+
+// ==================== ACTIONS ====================
+function runExample(){
+  const area=document.getElementById('ex-result');
+  const sql=document.getElementById('ex-sql').value.trim();
+  execAndShow(sql,area,'');
+}
+
+function doCheck(){
+  const L=LESSONS[cur];
+  const input=document.getElementById('pq-input').value.trim();
+  const fb=document.getElementById('pq-fb');
+  const ta=document.getElementById('pq-input');
+  if(!input){showFb(fb,'info','请输入 SQL 语句再检查。');return;}
+  hideFb(fb);clearResult('pq-result');ta.classList.remove('wrong','correct');
+
+  if(L.check.startsWith('CONTAINS:')){
+    const t=L.check.replace('CONTAINS:','').trim();
+    if(input.toUpperCase().includes(t.toUpperCase())){
+      markDone();ta.classList.add('correct');showFb(fb,'ok','✅ 正确！');
+      displayResult(execSQL(input),'pq-result');
+    }else{
+      ta.classList.add('wrong');showFb(fb,'bad','❌ 不太对。你的 SQL 需要包含 <b>'+escHtml(t)+'</b>。点"看提示"查看答案。');
+      displayResult(execSQL(input),'pq-result');
+    }
+    return;
+  }
+
+  const got=execSQL(input);
+  if(got.error){ta.classList.add('wrong');showFb(fb,'bad','❌ 语法错误：'+escHtml(translateErr(got.error)));return;}
+  const want=execSQL(L.check);
+
+  if(compareResults(got,want)){
+    markDone();ta.classList.add('correct');showFb(fb,'ok','✅ 完全正确！做得很好！');
+  }else{
+    ta.classList.add('wrong');
+    if(got.results&&got.results.length>0&&got.results[0].values.length>0){
+      showFb(fb,'bad','❌ 查询结果和正确答案不一致（你查出了 '+got.results[0].values.length+' 行，但不是预期的数据）。检查一下条件是否正确？');
+    }else{
+      showFb(fb,'bad','❌ 查询没有返回任何数据。条件是不是写得太严格了？');
+    }
+  }
+  displayResult(got,'pq-result');
+}
+
+function markDone(){
+  const L=LESSONS[cur];done[L.id]=true;saveProgress();
+  const btn=document.getElementById('btn-next');if(btn)btn.style.visibility='visible';
+  // Update practice header
+  const hdr=document.querySelector('.practice .card-header');
+  if(hdr)hdr.innerHTML='✏️ 自己动手 <span style="color:#27ae60;font-size:0.75rem;">✅ 已完成</span>';
+}
+
+function doHint(){
+  const L=LESSONS[cur];
+  document.getElementById('pq-input').value=L.hint.replace(/;[\s\S]*/,'').trim();
+  showFb(document.getElementById('pq-fb'),'hint','💡 这是参考答案。运行看看结果，理解后会了再自己重写一遍。');
+  document.getElementById('pq-input').classList.remove('wrong','correct');
+}
+
+function doSkip(){if(cur<LESSONS.length-1){cur++;initDB();saveProgress();render();window.scrollTo(0,0);}}
+function doNext(){if(cur<LESSONS.length-1){cur++;initDB();saveProgress();render();window.scrollTo(0,0);}}
+function doPrev(){if(cur>0){cur--;initDB();saveProgress();render();window.scrollTo(0,0);}}
+function goTo(i){cur=i;initDB();saveProgress();render();window.scrollTo(0,0);}
+function toggleSandbox(){sandbox=!sandbox;initDB();if(sandbox)renderSandbox();else render();window.scrollTo(0,0);}
+
+// ==================== SANDBOX ====================
+function runSandbox(){
+  const input=document.getElementById('sb-input').value.trim();
+  if(!input)return;
+  hideFb(document.getElementById('sb-fb'));
+  const area=document.getElementById('sb-result');area.innerHTML='';area.classList.remove('show');
+  const stmts=input.split(';').filter(s=>s.trim());
+  let html='';
+  for(const s of stmts){
+    const r=execSQL(s.trim());
+    if(r.error){html+='<div class="fb bad show" style="margin-bottom:6px;">❌ '+escHtml(translateErr(r.error))+'</div>';}
+    else if(r.results&&r.results.length>0){
+      for(const t of r.results){
+        html+='<div class="count" style="display:block;">'+t.values.length+' 行</div>';
+        html+='<div style="overflow-x:auto;"><table class="res-table"><thead><tr>';
+        for(const c of t.columns)html+='<th>'+escHtml(c)+'</th>';
+        html+='</tr></thead><tbody>';
+        for(const row of t.values){html+='<tr>';for(const cell of row)html+='<td>'+(cell===null?'<em style="color:#ccc;">NULL</em>':escHtml(String(cell)))+'</td>';html+='</tr>';}
+        html+='</tbody></table></div>';
+      }
+    }else{
+      try{
+        db.run(s.trim());
+        html+='<div class="fb ok show" style="margin-bottom:6px;">✅ 执行成功，影响了 '+db.getRowsModified()+' 行。</div>';
+      }catch(e){html+='<div class="fb bad show">❌ '+escHtml(translateErr(e.message))+'</div>';}
+    }
+  }
+  area.innerHTML=html;area.classList.add('show');
+}
+
+function showSbMsg(type,text){
+  const fb=document.getElementById('sb-fb');fb.className='fb '+type+' show';fb.innerHTML=text;
+}
+
+function showTableInfo(){
+  let html='<p><strong>students</strong>: '+TABLE_INFO.students.join(', ')+'</p>';
+  html+='<p><strong>courses</strong>: '+TABLE_INFO.courses.join(', ')+'</p>';
+  html+='<p><strong>scores</strong>: '+TABLE_INFO.scores.join(', ')+'</p>';
+  showSbMsg('info','📋 表结构：<br>'+html);
+}
+
+// ==================== HELPERS ====================
+function execSQL(sql){
+  try{const r=db.exec(sql);return{results:r};}
+  catch(e){return{error:e.message};}
+}
+
+function execAndShow(sql,area,label){
+  area.innerHTML='';area.classList.remove('show');
+  const r=execSQL(sql);
+  if(r.error){area.innerHTML='<div class="fb bad show">'+escHtml(translateErr(r.error))+'</div>';area.classList.add('show');return;}
+  if(!r.results||r.results.length===0){area.innerHTML='<div class="fb info show">查询成功，无返回数据。</div>';area.classList.add('show');return;}
+  let html='';
+  for(const t of r.results){
+    html+='<div class="count">'+t.values.length+' 行</div>';
+    html+='<div style="overflow-x:auto;"><table class="res-table"><thead><tr>';
+    for(const c of t.columns)html+='<th>'+escHtml(c)+'</th>';
+    html+='</tr></thead><tbody>';
+    for(const row of t.values){html+='<tr>';for(const cell of row)html+='<td>'+(cell===null?'<em style="color:#ccc;">NULL</em>':escHtml(String(cell)))+'</td>';html+='</tr>';}
+    html+='</tbody></table></div>';
+  }
+  area.innerHTML=html;area.classList.add('show');
+}
+
+function displayResult(r,id){
+  const area=document.getElementById(id);
+  if(!area)return;
+  area.innerHTML='';area.classList.remove('show');
+  if(r.error){area.innerHTML='<div class="fb bad show">'+escHtml(translateErr(r.error))+'</div>';area.classList.add('show');return;}
+  if(!r.results||r.results.length===0)return;
+  execAndShow(r.results[0]?null:null,area,'');
+  // Redo inline
+  const t=r.results[0];
+  area.innerHTML='<div class="count">'+t.values.length+' 行</div><div style="overflow-x:auto;"><table class="res-table"><thead><tr>'+t.columns.map(c=>'<th>'+escHtml(c)+'</th>').join('')+'</tr></thead><tbody>'+t.values.map(row=>'<tr>'+row.map(c=>'<td>'+(c===null?'<em style="color:#ccc;">NULL</em>':escHtml(String(c)))+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+  area.classList.add('show');
+}
+
+function compareResults(a,b){
+  if(a.error||b.error)return false;
+  const ra=a.results,rb=b.results;
+  if(!ra&&!rb)return true;if(!ra||!rb)return false;
+  if(ra.length!==rb.length)return false;
+  for(let i=0;i<ra.length;i++){
+    if(ra[i].columns.length!==rb[i].columns.length)return false;
+    if(ra[i].values.length!==rb[i].values.length)return false;
+    for(let j=0;j<ra[i].values.length;j++){
+      const rowA=ra[i].values[j],rowB=rb[i].values[j];
+      if(!rowB||rowA.length!==rowB.length)return false;
+      for(let k=0;k<rowA.length;k++){if(String(rowA[k])!==String(rowB[k]))return false;}
+    }
+  }
+  return true;
+}
+
+function showFb(el,type,text){el.className='fb '+type+' show';el.innerHTML=text;}
+function hideFb(el){el.classList.remove('show');}
+function clearResult(id){const el=document.getElementById(id);if(el){el.innerHTML='';el.classList.remove('show');}}
+
+function translateErr(msg){
+  const m={'no such table':'表不存在（可用表：students, courses, scores）',
+    'no such column':'列名拼写错误，检查一下列名',
+    'syntax error':'语法错误，检查 SQL 语句的写法',
+    'near':'附近有语法错误，检查标点和关键词',
+    'UNIQUE constraint failed':'主键重复，不能插入相同的 id',
+    'NOT NULL constraint failed':'该列不能为空值'};
+  for(const[k,v]of Object.entries(m)){if(msg.includes(k))return v+': '+msg;}
+  return msg;
+}
+function escHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+
+function resetAll(){
+  if(confirm('确定重置所有学习进度吗？')){
+    done={};cur=0;sandbox=false;saveProgress();initDB();render();window.scrollTo(0,0);
+  }
+}
+
+// ==================== BOOT ====================
+window.addEventListener('DOMContentLoaded',boot);
+</script>
+</body>
+</html>
